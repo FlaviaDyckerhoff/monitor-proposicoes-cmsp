@@ -44,6 +44,15 @@ function salvarEstado(estado) {
   fs.writeFileSync(ARQUIVO_ESTADO, JSON.stringify(estado, null, 2));
 }
 
+function montarLinkConsulta(p) {
+  const params = new URLSearchParams({
+    tipo: p.tipo || '',
+    numero: String(p.numero || ''),
+    ano: String(p.ano || ''),
+  });
+  return `https://splegisconsulta.saopaulo.sp.leg.br/Pesquisa/IndexProjeto?${params.toString()}`;
+}
+
 async function buscarProposicoes() {
   const ano = new Date().getFullYear();
   console.log(`🔍 Buscando proposições de ${ano}...`);
@@ -109,12 +118,13 @@ async function enviarEmail(novas) {
         ? new Date(p.data).toLocaleDateString('pt-BR')
         : '-';
       const ementa = (p.ementa || '-').trim();
+      const linkConsulta = montarLinkConsulta(p);
       return `<tr>
         <td style="padding:8px;border-bottom:1px solid #eee;white-space:nowrap;font-size:12px;color:#555">${p.tipo}/${p.numero}/${p.ano}</td>
         <td style="padding:8px;border-bottom:1px solid #eee;font-size:12px;white-space:nowrap;color:#555">${dataFormatada}</td>
         <td style="padding:8px;border-bottom:1px solid #eee;font-size:12px">${ementa}</td>
         <td style="padding:8px;border-bottom:1px solid #eee;font-size:12px;white-space:nowrap">
-          <a href="https://splegisconsulta.saopaulo.sp.leg.br/Pesquisa/DetalheProjeto?coddoc=${p.chave}" style="color:#1a3a5c">ver</a>
+          <a href="${linkConsulta}" style="color:#1a3a5c;font-weight:bold;text-decoration:none" target="_blank">Abrir consulta</a>
         </td>
       </tr>`;
     }).join('');
@@ -125,7 +135,7 @@ async function enviarEmail(novas) {
   const html = `
     <div style="font-family:Arial,sans-serif;max-width:960px;margin:0 auto">
       <h2 style="color:#1a3a5c;border-bottom:2px solid #1a3a5c;padding-bottom:8px">
-        🏛️ CMSP — ${novas.length} nova(s) proposição(ões)
+        🏛️ Câmara Municipal de São Paulo — ${novas.length} nova(s) proposição(ões)
       </h2>
       <p style="color:#666;font-size:13px">Monitoramento automático — ${new Date().toLocaleString('pt-BR')}</p>
       ${avisoVolume}
@@ -141,15 +151,15 @@ async function enviarEmail(novas) {
         <tbody>${linhas}</tbody>
       </table>
       <p style="margin-top:20px;font-size:12px;color:#999">
-        Acesse: <a href="https://splegisconsulta.saopaulo.sp.leg.br/Pesquisa/IndexProjeto">SP Legis Consulta</a>
+        Acesse: <a href="https://splegisconsulta.saopaulo.sp.leg.br/Pesquisa/IndexProjeto">SP Legis Consulta — Câmara Municipal de São Paulo</a>
       </p>
     </div>
   `;
 
   await transporter.sendMail({
-    from: `"Monitor CMSP" <${EMAIL_REMETENTE}>`,
+    from: `"Monitor São Paulo" <${EMAIL_REMETENTE}>`,
     to: EMAIL_DESTINO,
-    subject: `🏛️ CMSP: ${novas.length} nova(s) proposição(ões) — ${new Date().toLocaleDateString('pt-BR')}`,
+    subject: `🏛️ São Paulo: ${novas.length} nova(s) proposição(ões) — ${new Date().toLocaleDateString('pt-BR')}`,
     html,
   });
 
