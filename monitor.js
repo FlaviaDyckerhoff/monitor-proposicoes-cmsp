@@ -52,6 +52,9 @@ function salvarEstado(estado) {
 }
 
 function montarLinkConsulta(p) {
+  if (p.chave) {
+    return `https://splegisconsulta.saopaulo.sp.leg.br/Pesquisa/DetalheProjeto?coddoc=${encodeURIComponent(String(p.chave))}`;
+  }
   const params = new URLSearchParams({
     tipo: p.tipo || '',
     numero: String(p.numero || ''),
