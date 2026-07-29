@@ -52,9 +52,8 @@ function salvarEstado(estado) {
 }
 
 function montarLinkConsulta(p) {
-  if (p.chave) {
-    return `https://splegisconsulta.saopaulo.sp.leg.br/Pesquisa/DetalheProjeto?coddoc=${encodeURIComponent(String(p.chave))}`;
-  }
+  // O detalhe por coddoc passou a redirecionar para /Error/HttpError no
+  // SPLEGIS. A busca por tipo/número/ano continua estável e abre a proposição.
   const params = new URLSearchParams({
     tipo: p.tipo || '',
     numero: String(p.numero || ''),
