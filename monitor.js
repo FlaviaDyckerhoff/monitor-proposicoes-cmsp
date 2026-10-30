@@ -99,8 +99,7 @@ async function buscarProposicoes() {
   const response = await fetch(`${API_BASE}/ProjetosPorAnoJSON?Ano=${ano}`);
 
   if (!response.ok) {
-    console.error(`❌ Erro na API: ${response.status} ${response.statusText}`);
-    return [];
+    throw new Error(`Erro na API: ${response.status} ${response.statusText}`);
   }
 
   const lista = await response.json();
