@@ -9,6 +9,7 @@ function fichaEmailButtonHtml() {
 }
 
 const fs = require('fs');
+const { carregarReferenciasFoco, renderReferenciasFoco } = require('./project-focus-references');
 const nodemailer = require('nodemailer');
 let promoverInteresseClienteProposicao = (_item, atuais) => Array.isArray(atuais) ? atuais : [];
 try {
@@ -520,6 +521,12 @@ async function enviarEmail(novas) {
   }
 
   anotarClientesCitados(novas);
+  const cruzamentoFocos = await carregarReferenciasFoco(novas, {
+    url: CONTROLE03_STATE_URL, headers: radar03AuthHeaders(), casa: 'CMSP',
+  });
+  if (cruzamentoFocos.status === 'incompleto') console.warn('⚠️ Cruzamento de projetos-foco incompleto; email preservado.');
+  const avisoFocos = cruzamentoFocos.status === 'incompleto'
+    ? '<p style="color:#92400e;font-size:12px">⚠️ Cruzamento com os projetos-foco indisponível nesta rodada. As proposições estão listadas, mas a ausência de destaque não confirma ausência de relação com um foco.</p>' : '';
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: { user: EMAIL_REMETENTE, pass: EMAIL_SENHA },
@@ -568,7 +575,7 @@ async function enviarEmail(novas) {
       return `<tr>
         <td style="padding:8px;border-bottom:1px solid #eee;white-space:nowrap;font-size:12px;color:#555">${p.tipo}/${p.numero}/${p.ano}</td>
         <td style="padding:8px;border-bottom:1px solid #eee;font-size:12px;white-space:nowrap;color:#555">${dataFormatada}</td>
-        <td style="padding:8px;border-bottom:1px solid #eee;font-size:12px">${ementa}</td>
+        <td style="padding:8px;border-bottom:1px solid #eee;font-size:12px">${ementa}${renderReferenciasFoco(p)}</td>
         <td style="padding:8px;border-bottom:1px solid #eee;font-size:12px;white-space:nowrap">
           <a href="${linkConsulta}" style="color:#1a3a5c;font-weight:bold;text-decoration:none" target="_blank">Abrir consulta</a>
         </td>
@@ -586,6 +593,7 @@ async function enviarEmail(novas) {
       </h2>
       <p style="color:#666;font-size:13px">Monitoramento automático — ${new Date().toLocaleString('pt-BR')}</p>
       ${avisoVolume}
+      ${avisoFocos}
       <table style="width:100%;border-collapse:collapse;font-size:14px">
         <thead>
           <tr style="background:#1a3a5c;color:white">

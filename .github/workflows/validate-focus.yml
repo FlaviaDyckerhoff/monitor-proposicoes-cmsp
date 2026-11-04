@@ -1,0 +1,20 @@
+name: Validar referências de foco (somente leitura)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node --test test-project-focus-references.js
+      - name: Consultar carteira viva sem enviar email
+        env:
+          CONTROLE03_API_USER: ${{ secrets.CONTROLE03_API_USER }}
+          CONTROLE03_API_PASS: ${{ secrets.CONTROLE03_API_PASS }}
+          CONTROLE03_STATE_URL: ${{ secrets.CONTROLE03_STATE_URL }}
+        run: node scripts/validate-focus-live.js
